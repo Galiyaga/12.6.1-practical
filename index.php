@@ -97,7 +97,7 @@ function getGenderFromName($fullname) {
     }
     
     // Признаки мужского пола:
-    if (mb_substr($parts['patronymic'], -3, null, 'UTF-8') === 'ич') {
+    if (mb_substr($parts['patronymic'], -2, null, 'UTF-8') === 'ич') {
         $genderScore++;
     }
     if (mb_substr($parts['name'], -1, null, 'UTF-8') === 'й' || mb_substr($parts['name'], -1, null, 'UTF-8') === 'н') {
@@ -117,7 +117,7 @@ function getGenderFromName($fullname) {
 }
 
 //пример использования
-$gender = getGenderFromName('Степанова Наталья Степановна');
+$gender = getGenderFromName('Шварцнегер Арнольд Густавович');
 echo $gender; 
 
 //Определение возрастно-полового состава
@@ -165,19 +165,16 @@ function getPerfectPartner($last_name, $first_name, $patronymic, $persons_array)
 
     $gender = getGenderFromName($full_name);
 
-    $perfect_partner = null;
-    while ($perfect_partner == null) {
-        $random_person = $persons_array[array_rand($persons_array)];
+    $suitable_partners = array_filter($persons_array, function ($person) use ($gender) {
+        $person_gender = getGenderFromName($person['fullname']);
+        return $person_gender === -$gender;
+    });
 
-        $partner_gender = getGenderFromName($random_person['fullname']);
-        if ($partner_gender === -$gender) {
-            $perfect_partner = $random_person;
-        }
-    }
+    $random_partner = $suitable_partners[array_rand($suitable_partners)];
 
     $compatibility_percentage = round(mt_rand(5000, 10000) / 100, 2);
 
-    $partner_short_name = getShortName($perfect_partner['fullname']);
+    $partner_short_name = getShortName($random_partner['fullname']);
 
     $result = $full_name . ' + ' . $partner_short_name . ' = ' . PHP_EOL;
     $result .= '♡ Идеально на ' . $compatibility_percentage . '% ♡';
